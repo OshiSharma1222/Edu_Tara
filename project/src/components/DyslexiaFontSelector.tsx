@@ -115,3 +115,4 @@ const DyslexiaFontSelector: React.FC<DyslexiaFontSelectorProps> = ({ onFontChang
 
 export default DyslexiaFontSelector;
 export type { FontOption };
+

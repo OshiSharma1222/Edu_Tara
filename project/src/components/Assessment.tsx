@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, Clock, CheckCircle, XCircle, Brain, BookOpen, Calculator, Star, Heart, ArrowLeft } from 'lucide-react';
-import { Assessment as AssessmentType, Question, Response } from '../types';
-import { mathQuestions, englishQuestions } from '../data/assessmentData';
-import TextToSpeech from './TextToSpeech';
-import { useScores } from '../hooks/useScores';
+import { ArrowLeft, BookOpen, Brain, Calculator, CheckCircle, ChevronRight, Clock, Heart, Star } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { englishQuestions, mathQuestions } from '../data/assessmentData';
 import { useAIAnalysis } from '../hooks/useAIAnalysis';
+import { useScores } from '../hooks/useScores';
+import { Response } from '../types';
+import TextToSpeech from './TextToSpeech';
 
 interface AssessmentProps {
   grade: number;
@@ -84,9 +84,17 @@ const Assessment: React.FC<AssessmentProps> = ({ grade, subject, onComplete, onB
       timeTaken: 30 - timeLeft
     };
 
-    setResponses([...responses, newResponse]);
-    setShowResult(true);
+    const updatedResponses = [...responses, newResponse];
+    setResponses(updatedResponses);
 
+    // If last question, immediately show progress report
+    if (currentQuestionIndex === currentQuestions.length - 1) {
+      completeAssessment(updatedResponses);
+      return;
+    }
+
+    // Otherwise, show feedback for 2 seconds
+    setShowResult(true);
     setTimeout(() => {
       setShowResult(false);
       moveToNextQuestion();
@@ -104,8 +112,8 @@ const Assessment: React.FC<AssessmentProps> = ({ grade, subject, onComplete, onB
     }
   };
 
-  const completeAssessment = () => {
-    const score = (responses.filter(r => r.isCorrect).length / currentQuestions.length) * 100;
+  const completeAssessment = (finalResponses = responses) => {
+    const score = (finalResponses.filter(r => r.isCorrect).length / currentQuestions.length) * 100;
 
     // Save score to database
     saveScore({
@@ -115,18 +123,14 @@ const Assessment: React.FC<AssessmentProps> = ({ grade, subject, onComplete, onB
       grade,
       score: Math.round(score),
       max_score: 100,
-      time_taken: responses.reduce((total, r) => total + r.timeTaken, 0),
-      chapter_id: selectedChapter?.id,
-      chapter_name: selectedChapter?.title,
+      time_taken: finalResponses.reduce((total, r) => total + r.timeTaken, 0),
+      chapter_id: undefined,
+      chapter_name: undefined,
       metadata: {
         total_questions: currentQuestions.length,
-        correct_answers: responses.filter(r => r.isCorrect).length,
-        chapter_info: selectedChapter ? {
-          id: selectedChapter.id,
-          title: selectedChapter.title,
-          difficulty: selectedChapter.difficulty
-        } : null,
-        responses: responses.map(r => ({
+        correct_answers: finalResponses.filter(r => r.isCorrect).length,
+        chapter_info: null,
+        responses: finalResponses.map(r => ({
           question_id: r.questionId,
           selected_answer: r.selectedAnswer,
           is_correct: r.isCorrect,
@@ -278,6 +282,55 @@ const Assessment: React.FC<AssessmentProps> = ({ grade, subject, onComplete, onB
                 </div>
               );
             })}
+          </div>
+
+          {/* Progress Report */}
+          <div className="bg-white p-6 rounded-3xl shadow-xl border-4 border-blue-100 mb-6 mt-8">
+            <h2 className="text-2xl font-bold text-blue-800 mb-4 text-center">Progress Report 📊</h2>
+            {/* Overall Score Chart */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-700 mb-2">Overall Performance</h3>
+              <div className="flex items-center space-x-4">
+                <span className="text-green-600 font-bold">Correct: {correctAnswers}</span>
+                <span className="text-red-600 font-bold">Incorrect: {totalQuestions - correctAnswers}</span>
+              </div>
+              {/* Simple bar chart */}
+              <div className="w-full h-6 bg-gray-200 rounded-full mt-2 flex overflow-hidden">
+                <div className="bg-green-400 h-full" style={{ width: `${(correctAnswers / totalQuestions) * 100}%` }} />
+                <div className="bg-red-400 h-full" style={{ width: `${((totalQuestions - correctAnswers) / totalQuestions) * 100}%` }} />
+              </div>
+            </div>
+            {/* Topic-wise Performance (if available) */}
+            {currentQuestions[0]?.topic && (
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-700 mb-2">Topic-wise Performance</h3>
+                {Array.from(new Set(currentQuestions.map(q => q.topic))).map(topic => {
+                  const topicQuestions = currentQuestions.filter(q => q.topic === topic);
+                  const topicCorrect = topicQuestions.filter((q, i) => responses[i]?.isCorrect).length;
+                  return (
+                    <div key={topic} className="mb-2">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="font-medium text-gray-600">{topic}</span>
+                        <span>{topicCorrect}/{topicQuestions.length} correct</span>
+                      </div>
+                      <div className="w-full h-4 bg-gray-100 rounded-full flex overflow-hidden">
+                        <div className="bg-blue-400 h-full" style={{ width: `${(topicCorrect / topicQuestions.length) * 100}%` }} />
+                        <div className="bg-gray-300 h-full" style={{ width: `${((topicQuestions.length - topicCorrect) / topicQuestions.length) * 100}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {/* Recommendations */}
+            <div className="mt-4">
+              <h3 className="font-semibold text-gray-700 mb-2">Next Steps</h3>
+              <ul className="list-disc list-inside text-gray-700">
+                {score >= 80 && <li>Advance to a higher difficulty for more challenge!</li>}
+                {score >= 60 && score < 80 && <li>Review mistakes and try a few more practice questions on weaker topics.</li>}
+                {score < 60 && <li>Focus on the topics with lower scores and try again at the same or lower difficulty.</li>}
+              </ul>
+            </div>
           </div>
 
           {/* Continue Button */}

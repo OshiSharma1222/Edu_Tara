@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Lightbulb, ArrowRight, BookOpen, Calculator, Target, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, Calculator, Lightbulb, Sparkles } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useAIAnalysis } from '../hooks/useAIAnalysis';
 import { useScores } from '../hooks/useScores';
 
