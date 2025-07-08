@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Palette, Check } from 'lucide-react';
+import { Check, Palette } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface ColorTheme {
   id: string;
@@ -119,7 +119,7 @@ const ColorThemeSelector: React.FC<ColorThemeSelectorProps> = ({ onThemeChange }
   };
 
   return (
-    <div className="fixed top-4 right-20 z-50">
+    <div>
       <div className="relative">
         {/* Toggle Button */}
         <button

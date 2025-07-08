@@ -1,11 +1,11 @@
+import { Heart, Sparkles, Star } from 'lucide-react';
 import React from 'react';
-import { Calculator, BookOpen, Star, Sparkles, Heart } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { useColorTheme } from '../hooks/useColorTheme';
+import { useDyslexiaFont } from '../hooks/useDyslexiaFont';
 import ColorThemeSelector, { ColorTheme } from './ColorThemeSelector';
 import DyslexiaFontSelector, { FontOption } from './DyslexiaFontSelector';
 import AuthButton from './auth/AuthButton';
-import { useColorTheme } from '../hooks/useColorTheme';
-import { useDyslexiaFont } from '../hooks/useDyslexiaFont';
-import { useAuth } from '../hooks/useAuth';
 
 interface WelcomeScreenProps {
   onStartAssessment: () => void;
@@ -43,14 +43,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStartAssessment, onStar
         </div>
       </div>
 
-      {/* Color Theme Selector */}
-      <ColorThemeSelector onThemeChange={handleThemeChange} />
-      
-      {/* Dyslexia Font Selector */}
-      <DyslexiaFontSelector onFontChange={handleFontChange} />
-      
-      {/* Auth Button */}
-      <div className="absolute top-4 right-4 z-50">
+      {/* Top-right controls container */}
+      <div className="fixed top-4 right-4 z-50 flex flex-row items-center space-x-4">
+        <ColorThemeSelector onThemeChange={handleThemeChange} />
+        <DyslexiaFontSelector onFontChange={handleFontChange} />
         <AuthButton />
       </div>
       

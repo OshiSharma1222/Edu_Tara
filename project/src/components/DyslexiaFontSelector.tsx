@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Type, Check } from 'lucide-react';
+import { Check, Type } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface FontOption {
   id: string;
@@ -53,7 +53,7 @@ const DyslexiaFontSelector: React.FC<DyslexiaFontSelectorProps> = ({ onFontChang
   };
 
   return (
-    <div className="fixed top-4 right-36 z-50">
+    <div>
       <div className="relative">
         {/* Toggle Button */}
         <button
